@@ -63,17 +63,45 @@ function replaceSkemaElements() {
   const day = now.getDay();
   const skemaTabel = document.getElementById('s_m_Content_Content_SkemaMedNavigation_skema_skematabel')
   if (skemaTabel){
-  const SkemaKolonne = skemaTabel.querySelector('tbody').querySelectorAll('tr')[3].querySelectorAll('td')[day];
-  SkemaKolonne.style.setProperty('border-color', 'crimson');
-  SkemaKolonne.style.setProperty('border-width', '3px');
-  SkemaKolonne.querySelector('hr').style.setProperty('z-index', '0');
-  SkemaKolonne.querySelector('div.s2skemabrikcontainer').style.setProperty('background-color', 'coral');
+    const SkemaKolonne = skemaTabel.querySelector('tbody').querySelectorAll('tr')[3].querySelectorAll('td')[day];
+    SkemaKolonne.style.setProperty('border-color', 'crimson');
+    SkemaKolonne.style.setProperty('border-width', '3px');
+    SkemaKolonne.querySelector('hr').style.setProperty('z-index', '0');
+    SkemaKolonne.querySelector('div.s2skemabrikcontainer').style.setProperty('background-color', 'coral');
+    
+
+    const moduleBgs = skemaTabel.querySelectorAll('div.s2module-bg')
+    moduleBgs.forEach(Bg => {
+      Bg.style.setProperty('background-color', 'rgba(256, 256, 256, 0.5)');
+    });
   }
 
-  const moduleBgs = skemaTabel.querySelectorAll('div.s2module-bg')
-  moduleBgs.forEach(Bg => {
-    Bg.style.setProperty('background-color', 'rgba(256, 256, 256, 0.5)');
-  })
+
+
+
+  if (window.location.href.split('/')[5] === 'aktivitet')
+  {
+    const hold = document.querySelector('a.s2skemabrik').children[0].children[0].children[0].innerText;
+    console.log(hold);
+    const holdDocId = findDocumentlistIdFromTeam(hold);
+
+
+    const currentUrl = window.location.href;
+    // Split the URL by '/'
+    const parts = currentUrl.split('/');
+    // Get the first three parts and join them back together
+    const modifiedUrl = parts.slice(0, 5).join('/') + '/DokumentOversigt.aspx?folderid=' + holdDocId;
+
+    const sideList = document.querySelectorAll('ul.ls-toc-side-list')[0];
+
+    const documentElement = document.createElement('li');
+
+    const aHref = document.createElement('a');
+    aHref.href = modifiedUrl;
+    aHref.textContent = 'Dokumenter';
+    documentElement.appendChild(aHref);
+    sideList.appendChild(documentElement);
+  }
   
 }
 function generateRandomColor(seed) {
@@ -188,16 +216,44 @@ async function scrapeWebsite(url) {
       const data = {};
 
       // Example: Get text content of all <h1> elements
-      const holdFolder = doc.getElementById("s_m_Content_Content_FolderTreeView").querySelectorAll("div")[2]
+      // const holdFolder = doc.getElementById("s_m_Content_Content_FolderTreeView").querySelectorAll("div")[2];
       
 
       // Return the extracted data
+
       return doc;
   } catch (error) {
       // Handle errors
       console.error('Error scraping website:', error);
       return null;
   }
+}
+function findDocumentlistIdFromTeam(team) {
+
+  const currentUrl = window.location.href;
+
+  // Split the URL by '/'
+  const parts = currentUrl.split('/');
+
+  // Get the first three parts and join them back together
+  const modifiedUrl = parts.slice(0, 5).join('/');
+  scrapeWebsite(modifiedUrl + '/DokumentOversigt.aspx').then(doc => {
+    console.log(doc);
+    const holdFolder = doc.getElementById("s_m_Content_Content_FolderTreeView").children[2];
+    console.log(holdFolder);
+    const holdList = holdFolder.children[1].children;
+
+    const holdet = Array.from(holdList, item => item).filter(function(hold) {
+        return hold.querySelector('div.TreeNode-title').textContent == team;
+      });
+    // const holdet = holdList.filter(function(hold) {
+    //   return hold.querySelector('div.TreeNode-title').textContent == team;
+    // });
+
+    if (holdet.length > 0){
+    return holdet[0].getAttribute('lec-node-id');
+    }
+  });
 }
 
 
