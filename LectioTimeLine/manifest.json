@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "HR Divider Colorizer",
+  "version": "1.0",
+  "description": "Change HR divider color and position",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.lectio.dk/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
