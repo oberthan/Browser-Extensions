@@ -1,26 +1,33 @@
 // Retrieve stored data from Chrome's local storage
 chrome.storage.local.get(null, (data) => {
-    // Get the colorList element from popup.html
-    const colorList = document.getElementById('colorList');
-    const selectSeed = document.getElementById('selectSeed');
 
-    // Iterate over the stored data
-    for (const [seed, color] of Object.entries(data)) {
-        // Create a list item for each seed-color pair
-        const listItem = document.createElement('li');
-        listItem.textContent = `Seed: ${seed}, Color: ${color}`;
-        listItem.style.backgroundColor = color;
-        listItem.style.color = contrastTextColor(color);
+  // Get the colorList element from popup.html
+  const colorList = document.getElementById('colorList');
+  const selectSeed = document.getElementById('selectSeed');
 
-        // Append the list item to the colorList
-        colorList.appendChild(listItem);
+  // Iterate over the stored data
+  for (const [seed, color] of Object.entries(data)) {
+    // Create a list item for each seed-color pair
 
-        const selectOption = document.createElement('option');
-        selectOption.value = seed;
-        selectOption.text = seed;
+    if (seed.charAt(seed.length - 1) !== '_'){
+    if (data[seed + '_']){
+      const listItem = document.createElement('li');
+      listItem.textContent = `Hold: ${seed}, Farve: ${color}`;
+      listItem.style.backgroundColor = color;
+      listItem.style.color = contrastTextColor(color);
 
-        selectSeed.appendChild(selectOption);
+      // Append the list item to the colorList
+      colorList.appendChild(listItem);
+
     }
+    const selectOption = document.createElement('option');
+    selectOption.value = seed;
+    selectOption.text = seed;
+
+    selectSeed.appendChild(selectOption);
+  }
+  }
+
 });
 
 function saveSeedColor(){
@@ -30,6 +37,7 @@ function saveSeedColor(){
     const rgbString = 'rgb(' + fromHex.r + ', ' + fromHex.g + ', ' + fromHex.b + ')';
     console.log("Saving color " + rgbString + " with seed " + seed);
     chrome.runtime.sendMessage({ type: 'saveColor', seed: seed, color: rgbString });
+    chrome.runtime.sendMessage({ type: 'isColorChanged', seed: seed + '_', changed: true});
     
     document.location.reload();
 }
@@ -42,7 +50,7 @@ function hexToRgb(hex) {
     } : null;
   }
 
-  function contrastTextColor(rgbColor){
+function contrastTextColor(rgbColor){
   const regex = /rgb\((\d+), (\d+), (\d+)\)/;
   const match = rgbColor.match(regex);
 
@@ -67,4 +75,10 @@ function hexToRgb(hex) {
   }
 }
 
+function ResetStorage(){
+  chrome.storage.local.clear();
+  document.location.reload();
+}
+
 document.getElementById('saveButton').addEventListener('click', saveSeedColor);
+document.getElementById('resetButton').addEventListener('click', ResetStorage);

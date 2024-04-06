@@ -6,7 +6,7 @@ function replaceHRElements() {
     hr.style.setProperty('color', 'red');
     hr.color = 'red';
     hr.style.setProperty('z-index', '1');
-    console.log("Changed an element.");
+
   });
   replaceSkemaElements();
 }
@@ -32,16 +32,16 @@ function replaceSkemaElements() {
 
       if (inList){
 
-        console.log("Farve findes i forvejen.")
+
       } else {
         chrome.runtime.sendMessage({ type: 'saveColor', seed: hold, color: randomColor });
-        console.log("Farve findes ikke og er derfor blevet gemt.")
+        chrome.runtime.sendMessage({ type: 'isColorChanged', seed: seed + '_', changed: false});
       }
 
      
       div.style.setProperty('background-color', randomColor);
       div.querySelector('div.s2skemabrikcontent').style.setProperty('color', generateContrastColor(randomColor))
-      console.log("Changed an color with seed " + hold);
+ 
       const A = div.parentElement;
       A.style.setProperty('box-shadow', 'rgba(0, 0, 0, 1) 0px 0px 5px 0px');
       A.style.setProperty('border-radius', '5px');
@@ -63,12 +63,14 @@ function replaceSkemaElements() {
   const day = now.getDay();
   const skemaTabel = document.getElementById('s_m_Content_Content_SkemaMedNavigation_skema_skematabel')
   if (skemaTabel){
-    const SkemaKolonne = skemaTabel.querySelector('tbody').querySelectorAll('tr')[3].querySelectorAll('td')[day];
-    SkemaKolonne.style.setProperty('border-color', 'crimson');
-    SkemaKolonne.style.setProperty('border-width', '3px');
-    SkemaKolonne.querySelector('hr').style.setProperty('z-index', '0');
-    SkemaKolonne.querySelector('div.s2skemabrikcontainer').style.setProperty('background-color', 'coral');
-    
+    const SkemaKolonner = skemaTabel.querySelector('tbody').querySelectorAll('tr')[3].querySelectorAll('td')
+    if (day > 0 && day <= SkemaKolonner.length -1){console.lo
+      const SkemaKolonne = SkemaKolonner[day];
+      SkemaKolonne.style.setProperty('border-color', 'crimson');
+      SkemaKolonne.style.setProperty('border-width', '3px');
+      SkemaKolonne.querySelector('hr').style.setProperty('z-index', '0');
+      SkemaKolonne.querySelector('div.s2skemabrikcontainer').style.setProperty('background-color', 'coral');
+    }
 
     const moduleBgs = skemaTabel.querySelectorAll('div.s2module-bg')
     moduleBgs.forEach(Bg => {
@@ -82,28 +84,199 @@ function replaceSkemaElements() {
   if (window.location.href.split('/')[5] === 'aktivitet')
   {
     const hold = document.querySelector('a.s2skemabrik').children[0].children[0].children[0].innerText;
+    
+    const PrintAktivititetArea = document.getElementById('PrintAktivititetArea');
+    PrintAktivititetArea.style.setProperty('max-width', '1270px')
+
     console.log(hold);
-    const holdDocId = findDocumentlistIdFromTeam(hold);
+    findDocumentlistIdFromTeam(hold).then(holdDocId => {
+      console.log("Resultat fra funktionskaldet er " + holdDocId);
+
+      const currentUrl = window.location.href;
+      // Split the URL by '/'
+      const parts = currentUrl.split('/');
+      // Get the first three parts and join them back together
+
+      const urlSuffix = holdDocId ? `?folderid=${holdDocId}` : '';
+      const modifiedUrl = parts.slice(0, 5).join('/') + '/DokumentOversigt.aspx' + urlSuffix;
+
+      const sideList = document.querySelectorAll('ul.ls-toc-side-list')[0];
+
+      const documentElement = document.createElement('li');
+
+      const aHref = document.createElement('a');
+      aHref.href = modifiedUrl;
+      aHref.style.setProperty('vertical-align', 'middle');
+      const textSuffix = holdDocId ? ' (' + hold + ')' : '';
+      aHref.textContent = `Dokumenter${textSuffix}`;
+
+      const template = document.createElement('template');
+      template.innerHTML = '<img alt="" src="/lectio/img/doc.gif" class="noborder">';
+      const result = template.content.children;
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      div1.appendChild(result[0]);
+      div2.appendChild(aHref);
+
+      documentElement.appendChild(div1);
+      documentElement.appendChild(div2);
+      sideList.appendChild(documentElement);
+      
+      const contentParent = document.querySelector('div.ls-texteditor-paper-container');
+      contentParent.style.setProperty('display', 'flex');
+      const documentsContent = document.createElement('div');
+      documentsContent.classList.add('ls-paper');
+      documentsContent.style.setProperty('margin-left', '20px');
+      documentsContent.style.setProperty('width', '25%');
+      documentsContent.style.setProperty('padding', '10px');
+      documentsContent.style.setProperty('position', 'relative');
+      contentParent.appendChild(documentsContent);
+    
+      const overskrift = document.createElement('a');
+      documentsContent.appendChild(overskrift);
+    
+      overskrift.textContent = 'Dokumenter';
+      overskrift.style.fontSize = '22px';
+      overskrift.style.marginBottom = '15px';
+    
+      const listDocs = document.createElement('ul');
+      listDocs.style.marginTop = '10px';
+      listDocs.id = 'list-for-documents';
+      const upperList = document.createElement('div');
+      upperList.style.overflowY = 'auto';
+      upperList.style.overflowX = 'hidden';
+      upperList.style.maxHeight = '65%';
+
+      upperList.appendChild(listDocs);
+      documentsContent.appendChild(upperList);
+
+      const divideLine = document.createElement('hr');
+      divideLine.style.bottom = '30%';
+      divideLine.style.position = 'absolute';
+      divideLine.style.width = '90%';
+      documentsContent.appendChild(divideLine);
+
+      const lowerList = document.createElement('div');
+      lowerList.style.overflow = 'auto';
+      lowerList.style.bottom = '0';
+      lowerList.style.position = 'absolute';
+      lowerList.style.height = '30%';
+      lowerList.style.width = '95%';
+      documentsContent.appendChild(lowerList);
+      DrawDocumentsFromUrl(modifiedUrl);
 
 
-    const currentUrl = window.location.href;
-    // Split the URL by '/'
-    const parts = currentUrl.split('/');
-    // Get the first three parts and join them back together
-    const modifiedUrl = parts.slice(0, 5).join('/') + '/DokumentOversigt.aspx?folderid=' + holdDocId;
+      const lowerUL = document.createElement('ul')
+      lowerList.appendChild(lowerUL);
+      scrapeWebsite(modifiedUrl).then(doc => {
+        const holdFolder = doc.querySelector(`[lec-node-id="${holdDocId}"]`);
+        if (holdFolder){
+          const viewContainers = holdFolder.querySelectorAll('[lec-role="treeviewnodecontainer"]');
 
-    const sideList = document.querySelectorAll('ul.ls-toc-side-list')[0];
 
-    const documentElement = document.createElement('li');
+          const stNodeContainer = holdFolder.children[0];
+            const stNode = stNodeContainer.querySelector('a.TreeNode');
+            stNode.style.setProperty('display', 'flex');
 
-    const aHref = document.createElement('a');
-    aHref.href = modifiedUrl;
-    aHref.textContent = 'Dokumenter';
-    documentElement.appendChild(aHref);
-    sideList.appendChild(documentElement);
+            // node.href = `javascript:DrawDocumentsFromUrl("${parts.slice(0, 5).join('/') + '/DokumentOversigt.aspx?folderid=' + Container.attributes.getNamedItem('lec-node-id').value} ")`;
+            stNode.href = '#';
+            stNode.addEventListener('click', function(event) {
+              event.preventDefault();
+              DrawDocumentsFromUrl(`${parts.slice(0, 5).join('/') + '/DokumentOversigt.aspx?folderid=' + holdFolder.attributes.getNamedItem('lec-node-id').value}`)
+            });
+            const liE1 = document.createElement('li');
+            liE1.appendChild(stNode);
+            lowerUL.appendChild(liE1);
+
+          viewContainers.forEach(Container => {
+            const nodeContainer = Container.children[0];
+            const node = nodeContainer.querySelector('a.TreeNode');
+            node.style.setProperty('display', 'flex');
+
+            // node.href = `javascript:DrawDocumentsFromUrl("${parts.slice(0, 5).join('/') + '/DokumentOversigt.aspx?folderid=' + Container.attributes.getNamedItem('lec-node-id').value} ")`;
+            node.href = '#';
+            node.addEventListener('click', function(event) {
+              event.preventDefault();
+              DrawDocumentsFromUrl(`${parts.slice(0, 5).join('/') + '/DokumentOversigt.aspx?folderid=' + Container.attributes.getNamedItem('lec-node-id').value}`)
+            });
+
+            node.style.setProperty('margin-bottom', 'auto');
+            const chevron = nodeContainer.querySelector('img.TreeNode-chevron');
+            if (chevron) {
+
+              const liE = document.createElement('li');
+              const hDiv = document.createElement('div');
+              liE.appendChild(hDiv);
+              hDiv.style.display = 'flex';
+
+              lowerUL.appendChild(liE);
+              hDiv.appendChild(chevron);
+              hDiv.appendChild(node);
+            }
+            else{
+              lowerUL.appendChild(node);
+            
+            }
+
+          });
+        }
+      });
+
+    });
+
+
+
+    
+
+
   }
   
 }
+
+function DrawDocumentsFromUrl(url){
+
+  console.log("Drawing Documents on list");
+  const listDocs = document.getElementById('list-for-documents');
+  const childsOfList = listDocs.childNodes;
+  const listLength = childsOfList.length;
+  for (let i = 0; i < listLength; i++){
+    listDocs.removeChild(childsOfList[0]);
+  }
+
+  scrapeWebsite(url).then(doc => {
+    console.log(doc);
+    const docGridView = doc.getElementById('s_m_Content_Content_DocumentGridView_ctl00');
+    if (docGridView){
+    const docContainer = docGridView.children
+    if (docContainer){
+      const documents = docContainer[0].children;
+      if (documents){
+        // documents = documents.slice(1);
+        
+        for (let i = 1; i < documents.length; i++){
+          const listItem = document.createElement('li');
+          const listText = document.createElement('a');
+          listItem.appendChild(listText);
+          listDocs.appendChild(listItem);
+
+          if(i < documents.length - 1){
+            const divider = document.createElement('hr');
+            listDocs.appendChild(divider);
+          }
+          const link = documents[i].children[1].children[0].href;
+          const text = documents[i].children[1].children[0].textContent;
+
+          listText.href = link;
+          listText.textContent = text;
+          listItem.style.marginBottom = '5px';
+        
+        }
+
+    } } }
+  });
+
+}
+
 function generateRandomColor(seed) {
   // Ensure seed is a string
   seed = seed.toString();
@@ -228,21 +401,19 @@ async function scrapeWebsite(url) {
       return null;
   }
 }
-function findDocumentlistIdFromTeam(team) {
+async function findDocumentlistIdFromTeam(team) {
 
-  const currentUrl = window.location.href;
+  try {
+    const currentUrl = window.location.href;
 
-  // Split the URL by '/'
-  const parts = currentUrl.split('/');
+    // Split the URL by '/'
+    const parts = currentUrl.split('/');
 
-  // Get the first three parts and join them back together
-  const modifiedUrl = parts.slice(0, 5).join('/');
-  scrapeWebsite(modifiedUrl + '/DokumentOversigt.aspx').then(doc => {
-    console.log(doc);
+    // Get the first three parts and join them back together
+    const modifiedUrl = parts.slice(0, 5).join('/');
+    const doc = await scrapeWebsite(modifiedUrl + '/DokumentOversigt.aspx');
     const holdFolder = doc.getElementById("s_m_Content_Content_FolderTreeView").children[2];
-    console.log(holdFolder);
     const holdList = holdFolder.children[1].children;
-
     const holdet = Array.from(holdList, item => item).filter(function(hold) {
         return hold.querySelector('div.TreeNode-title').textContent == team;
       });
@@ -251,9 +422,17 @@ function findDocumentlistIdFromTeam(team) {
     // });
 
     if (holdet.length > 0){
-    return holdet[0].getAttribute('lec-node-id');
+      const holdDocId = holdet[0].attributes.getNamedItem('lec-node-id').value;
+
+      return holdDocId;
     }
-  });
+
+  }
+  catch (error)
+  {
+    console.error('Error scraping website:', error);
+    return null;
+  }
 }
 
 
@@ -262,5 +441,6 @@ function findDocumentlistIdFromTeam(team) {
 
 replaceHRElements();
 
-
-setInterval(replaceHRElements, 60000);
+if (window.location.href.split('/')[5].split('.')[0] === 'SkemaNy') {
+  setInterval(replaceHRElements, 60000);
+}

@@ -6,5 +6,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-// chrome.setInterval(replaceHRElements, 60*1000);
-// setInterval(replaceHRElements, 60*1000);
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type === 'isColorChanged') {
+        // Store the color in Chrome's local storage
+        chrome.storage.local.set({ [request.seed]: request.changed });
+    }
+});
