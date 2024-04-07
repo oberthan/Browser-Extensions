@@ -28,6 +28,8 @@ chrome.storage.local.get(null, (data) => {
   }
   }
 
+  document.getElementById('darkmode').checked = data['darkTheme_'];
+
 });
 
 function saveSeedColor(){
@@ -39,7 +41,14 @@ function saveSeedColor(){
     chrome.runtime.sendMessage({ type: 'saveColor', seed: seed, color: rgbString });
     chrome.runtime.sendMessage({ type: 'isColorChanged', seed: seed + '_', changed: true});
     
+    chrome.tabs.query({currentWindow: true, active: true}, function(tab) {
+      chrome.tabs.sendMessage(tab[0].id, {type: "updateColors"});
+    });
+
     document.location.reload();
+
+
+
 }
 function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -80,5 +89,14 @@ function ResetStorage(){
   document.location.reload();
 }
 
+function toggleDarkMode(){
+  console.log(document.getElementById('darkmode').checked);
+  chrome.runtime.sendMessage({ type: 'saveColor', seed: 'darkTheme_', color: document.getElementById('darkmode').checked });
+  chrome.tabs.query({currentWindow: true, active: true}, function(tab) {
+    chrome.tabs.sendMessage(tab[0].id, {type: "updateTheme"});
+  });
+}
+
 document.getElementById('saveButton').addEventListener('click', saveSeedColor);
 document.getElementById('resetButton').addEventListener('click', ResetStorage);
+document.getElementById('darkmode').addEventListener('change', toggleDarkMode);

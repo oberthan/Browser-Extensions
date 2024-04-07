@@ -12,3 +12,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.local.set({ [request.seed]: request.changed });
     }
 });
+
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//     if (request.type === 'updateColors') {
+        
+//     }
+// });
+

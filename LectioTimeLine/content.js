@@ -8,7 +8,9 @@ function replaceHRElements() {
     hr.style.setProperty('z-index', '1');
 
   });
+  ChangeLooks();
   replaceSkemaElements();
+  
 }
 function replaceSkemaElements() {
 
@@ -435,7 +437,70 @@ async function findDocumentlistIdFromTeam(team) {
   }
 }
 
+function ChangeLooks(){
 
+  chrome.storage.local.get(null, (data) => {
+    // Get the colorList element from popup.html
+    if (data['darkTheme_'] === true){
+      
+
+      ChangePropertyByClass('masterbody', 'background-color', '#4b4b4b');
+
+      ChangePropertyByClass('ls-master-container1', 'background-color', 'transparent');
+
+      ChangePropertyByClass('.buttonlink a', 'color', '#7fbeff', true);
+      ChangePropertyByClass('.ls-subnav-active a', 'color', '#ff1100', true);
+
+      ChangePropertyByClass('A[href]', 'color', '#2992ff', true);
+      ChangePropertyByClass('tooltip', 'color', '#2992ff');
+
+      ChangePropertyByClass('maintitle', 'color', 'white');
+      
+      if (window.location.href.split('/')[5] === 'aktivitet'){
+        ChangePropertyByClass('ls-std-inline-block', 'color', 'white');
+      }else{
+      ChangePropertyByClass('ls-content', 'color', 'white');
+      }
+
+      ChangePropertyByClass('islandContent', 'background-color', '#3d3d3d')
+      ChangePropertyByClass('island', 'border', 'none');
+      ChangePropertyByClass('island', 'box-shadow', '0.2em 0.2em 1em rgba(0, 0, 0, 0.5)');
+
+      ChangePropertyByClass('s2skema', 'background-color', 'transparent');
+
+      ChangePropertyByClass('s2skemabrikcontainer', 'background-color', 'transparent');
+
+      ChangePropertyByClass('s2infoHeader', 'background-color', '#ffcc001c');
+      ChangePropertyByClass('s2infoHeader', 'color', 'white');
+
+      ChangePropertyByClass('s2module-info', 'color', 'white');
+
+      // ChangePropertyByClass('s2skema', 'border', 'none');
+
+      ChangePropertyByClass('.s2skema TD, .s2skema TH', 'border', 'none', true)
+
+      if (window.location.href.split('/')[5].split('.')[0] === 'SkemaNy'){
+
+        var weekHeader = document.querySelector('tr.s2weekHeader').children[0];
+        weekHeader.style.setProperty('border-top-right-radius', '10px');
+        weekHeader.style.setProperty('border-top-left-radius', '10px');
+      }
+    }
+  });
+
+}
+
+function ChangePropertyByClass(targetClass, property, value, query = false){
+  if(query){
+    var element = document.querySelectorAll(targetClass);
+  }else{
+    var element = document.getElementsByClassName(targetClass);
+  }
+  // Loop through each element and change its CSS properties
+  for (var i = 0; i < element.length; i++) {
+    element[i].style.setProperty(property, value);
+  }
+}
 
 // Run the function when the DOM is loaded
 
@@ -444,3 +509,28 @@ replaceHRElements();
 if (window.location.href.split('/')[5].split('.')[0] === 'SkemaNy') {
   setInterval(replaceHRElements, 60000);
 }
+
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message.type === "updateColors") {
+    console.log('Content.js recieved message.')
+    replaceHRElements(); // Call the function defined in content.js
+  }
+});
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message.type === "updateTheme") {
+
+    chrome.storage.local.get(null, (data) => {
+      // Get the colorList element from popup.html
+      if (data['darkTheme_'] === true){
+        
+
+      ChangeLooks(); // Call the function defined in content.js
+
+      }
+      else
+      {
+        window.location.reload();
+      }
+  });
+}
+});
