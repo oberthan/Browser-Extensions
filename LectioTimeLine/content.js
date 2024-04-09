@@ -475,6 +475,10 @@ function ChangeLooks(){
 
       ChangePropertyByClass('s2module-info', 'color', 'white');
 
+      ChangePropertyByClass('.separationCell, .separationCell TD, .separationCell TH', 'background-color', 'transparent', true);
+      ChangePropertyByClass('ls-table-layout1', 'background-color', 'transparent');
+
+
       // ChangePropertyByClass('s2skema', 'border', 'none');
 
       ChangePropertyByClass('.s2skema TD, .s2skema TH', 'border', 'none', true)
@@ -484,7 +488,10 @@ function ChangeLooks(){
         var weekHeader = document.querySelector('tr.s2weekHeader').children[0];
         weekHeader.style.setProperty('border-top-right-radius', '10px');
         weekHeader.style.setProperty('border-top-left-radius', '10px');
+        replaceSkemaElements();
       }
+
+
     }
   });
 
