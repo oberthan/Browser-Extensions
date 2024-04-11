@@ -63,16 +63,45 @@ function replaceSkemaElements() {
 
   const now = new Date();
   const day = now.getDay();
+
+  var dateIndex;
+
+  const dayOfMonth = now.getDate();
+  const month = now.getMonth() + 1;
   const skemaTabel = document.getElementById('s_m_Content_Content_SkemaMedNavigation_skema_skematabel')
   if (skemaTabel){
-    const SkemaKolonner = skemaTabel.querySelector('tbody').querySelectorAll('tr')[3].querySelectorAll('td')
-    if (day > 0 && day <= SkemaKolonner.length -1){console.lo
-      const SkemaKolonne = SkemaKolonner[day];
-      SkemaKolonne.style.setProperty('border-color', 'crimson');
-      SkemaKolonne.style.setProperty('border-width', '3px');
-      SkemaKolonne.querySelector('hr').style.setProperty('z-index', '0');
-      SkemaKolonne.querySelector('div.s2skemabrikcontainer').style.setProperty('background-color', 'coral');
+    const dateColumns = skemaTabel.children[0].children[1].children;
+    for(var i = 1; i<dateColumns.length; i++){
+      var indhold = dateColumns[i].textContent;
+
+      indhold = indhold.split('(')[1];
+      indhold = indhold.split(')')[0];
+      indhold = indhold.split('/');
+
+      var colDay = indhold[0];
+      var colMonth = indhold[1];
+
+      if (colDay === `${dayOfMonth}` && colMonth === `${month}`) {
+        const SkemaKolonner = skemaTabel.querySelector('tbody').querySelectorAll('tr')[3].querySelectorAll('td')
+        
+        const SkemaKolonne = SkemaKolonner[i];
+        SkemaKolonne.style.setProperty('border-color', 'crimson');
+        SkemaKolonne.style.setProperty('border-width', '3px');
+        SkemaKolonne.querySelector('hr').style.setProperty('z-index', '0');
+        SkemaKolonne.querySelector('div.s2skemabrikcontainer').style.setProperty('background-color', 'coral');
+        
+      }
+
     }
+
+    // const SkemaKolonner = skemaTabel.querySelector('tbody').querySelectorAll('tr')[3].querySelectorAll('td')
+    // if (day > 0 && day <= SkemaKolonner.length -1){console.lo
+    //   const SkemaKolonne = SkemaKolonner[day];
+    //   SkemaKolonne.style.setProperty('border-color', 'crimson');
+    //   SkemaKolonne.style.setProperty('border-width', '3px');
+    //   SkemaKolonne.querySelector('hr').style.setProperty('z-index', '0');
+    //   SkemaKolonne.querySelector('div.s2skemabrikcontainer').style.setProperty('background-color', 'coral');
+    // }
 
     const moduleBgs = skemaTabel.querySelectorAll('div.s2module-bg')
     moduleBgs.forEach(Bg => {
@@ -81,7 +110,16 @@ function replaceSkemaElements() {
   }
 
 
+  if (window.location.href.split('/')[5].split('.')[0] === 'beskeder2'){
+    var ting = document.querySelector('span.aspNetDisabled');
+    var checkBox = document.createElement('input');
+    checkBox.type = 'checkbox';
+    checkBox.id = 'spoergCheckBox';
 
+    var spoergLabel = document.createElement('label');
+    spoergLabel.textContent = 'Filtrer Spørgeskemaer';
+    spoergLabel.for
+  }
 
   if (window.location.href.split('/')[5] === 'aktivitet')
   {
@@ -443,6 +481,9 @@ function ChangeLooks(){
     // Get the colorList element from popup.html
     if (data['darkTheme_'] === true){
       
+      ChangePropertyByClass('H1, .h1', 'color', 'white', true);
+      ChangePropertyByClass('H2, .h2', 'color', 'white', true);
+      ChangePropertyByClass('H3, .h3', 'color', 'white', true);
 
       ChangePropertyByClass('masterbody', 'background-color', '#4b4b4b');
 
@@ -475,6 +516,12 @@ function ChangeLooks(){
 
       ChangePropertyByClass('s2module-info', 'color', 'white');
 
+      ChangePropertyByClass('.separationCell, .separationCell TD, .separationCell TH', 'background-color', 'transparent', true);
+      ChangePropertyByClass('ls-table-layout1', 'background-color', 'transparent');
+
+
+      ChangePropertyByClass('ls-questionnaire-question', 'background-color', '#2c2c2c');
+
       // ChangePropertyByClass('s2skema', 'border', 'none');
 
       ChangePropertyByClass('.s2skema TD, .s2skema TH', 'border', 'none', true)
@@ -484,7 +531,10 @@ function ChangeLooks(){
         var weekHeader = document.querySelector('tr.s2weekHeader').children[0];
         weekHeader.style.setProperty('border-top-right-radius', '10px');
         weekHeader.style.setProperty('border-top-left-radius', '10px');
+        replaceSkemaElements();
       }
+
+
     }
   });
 
