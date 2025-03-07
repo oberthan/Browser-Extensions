@@ -29,6 +29,12 @@ chrome.storage.local.get(null, (data) => {
   }
 
   document.getElementById('darkmode').checked = data['darkTheme_'];
+  var leFrame = document.getElementById('lectioFrame')
+  leFrame.src = data['_frameUrl_'];
+  leFrame.style.transformOrigin = 'top left';
+  leFrame.style.transform = 'scale(0.29)';
+  leFrame.style.setProperty('zoom', '3.5');
+
 
 });
 
@@ -89,6 +95,15 @@ function ResetStorage(){
   document.location.reload();
 }
 
+async function ChangeFrameUrl(){
+  const [tab] = await chrome.tabs.query({currentWindow: true, active: true});
+  // var response = await chrome.tabs.sendMessage(tab[0].id, {type: "GetCurrentUrl"});
+
+  chrome.runtime.sendMessage({ type: 'saveColor', seed: '_frameUrl_', color: tab.url });
+  document.location.reload();
+
+}
+
 function toggleDarkMode(){
   console.log(document.getElementById('darkmode').checked);
   chrome.runtime.sendMessage({ type: 'saveColor', seed: 'darkTheme_', color: document.getElementById('darkmode').checked });
@@ -99,4 +114,5 @@ function toggleDarkMode(){
 
 document.getElementById('saveButton').addEventListener('click', saveSeedColor);
 document.getElementById('resetButton').addEventListener('click', ResetStorage);
+document.getElementById('chooseFrameUrl').addEventListener('click', ChangeFrameUrl);
 document.getElementById('darkmode').addEventListener('change', toggleDarkMode);
