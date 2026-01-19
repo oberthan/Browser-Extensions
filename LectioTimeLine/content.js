@@ -93,7 +93,7 @@ function findNReplaceWeek(skemaTabel, dayOfMonth, month) {
     }
 }
 
-async function FindAndListUnbookedRooms() {
+async function OptimizedFindRooms(){
     let mainContentContainer = document.querySelector('.ls-content-container');
     let unbookedContainer = document.createElement('div');
     mainContentContainer.insertBefore(unbookedContainer, mainContentContainer.children[1]);
@@ -122,17 +122,24 @@ async function FindAndListUnbookedRooms() {
     console.log('Added the Unbooked Container');
 
     let listOfRooms = document.getElementsByClassName('ls-columnlist mod-onechild')[0].childNodes;
-
+    let roomIDs = [];
     for (const room of listOfRooms) {
         if (room.nodeType !== 1) continue;
-        const a = room.querySelector('a');
-        const link = a.getAttribute('href');
-        const number = a.querySelector('.findskema-symbol').innerText;
+        roomIDs.push(room.querySelector('a').getAttribute('href').split('&id=')[1]);
+    }
 
-        if (number.charAt(0) < '0' || number.charAt(0) > '9') continue;
+    const chunkSize = 10;
+    const result = [];
 
-        let isBooked = false;
-        let priority = 0;
+    for (let i = 0; i < roomIDs.length; i += chunkSize) {
+        const chunk = roomIDs.slice(i, i + chunkSize);
+        result.push(chunk);
+    }
+
+    let status = {};
+    for (const rooms of result) {
+        let link = window.location.href.split('/').slice(0, 5).join('/') + '/SkemaAvanceret.aspx?type=skema&lokalesel=' + rooms.join("%2c")
+
         await scrapeWebsite(link).then(doc => {
 
             doc.querySelectorAll('.s2brik').forEach(el => {
@@ -140,9 +147,13 @@ async function FindAndListUnbookedRooms() {
 
                 // 2. Extract the date/time string (e.g., "20/1-2026 14:30 til 15:30")
                 const timeMatch = tooltip.match(/(\d{1,2}\/\d{1,2}-\d{4})\s(\d{2}:\d{2})\stil\s(\d{2}:\d{2})/);
+                //const lokaleStr = tooltip.match(/Lokale:\s*(.*)/);
+                const roomMatch = tooltip.match(/Lokaler?:\s*(.*)/);
 
-                if (timeMatch) {
+                if (timeMatch && roomMatch) {
                     const [_, dateStr, startTime, endTime] = timeMatch;
+
+                    const lokaleStr = roomMatch[1].split(',').map(name => name.trim());
 
                     // 3. Convert Lectio format (DD/MM-YYYY) to standard JS format (YYYY-MM-DD)
                     const [day, month, year] = dateStr.split(/[\/-]/);
@@ -153,42 +164,80 @@ async function FindAndListUnbookedRooms() {
 
                     // 4. Compare
                     if (now >= start && now <= end) {
-                        if (el.classList.contains('s2cancelled')) {
-                            priority = 1;
+                        for (let l = 0; l<lokaleStr.length; l++) {
+                            const roomName = lokaleStr[l].replace(/,/g, "").trim();
+                            if (!status[roomName]) {
+                                status[roomName] = { booked: false, priority: 0 };
+                            }
+
+                            if (el.classList.contains('s2cancelled')) {
+                                status[roomName]['priority'] = 1;
+
+                            }
+                            else{
+                                status[roomName]['booked'] = true;
+
+                            }
                         }
-                        else{
-                            isBooked = true;
-                            //return;
+                    }else{
+                        for (let l = 0; l<lokaleStr.length; l++) {
+                            const roomName = lokaleStr[l].replace(/,/g, "").trim();
+                            if (!status[roomName]) {
+                                status[roomName] = { booked: false, priority: 0 };
+                            }
                         }
-                        //console.log(timeMatch);
-                        console.log(`Status: You should be in this class ${number} right now.`);
-                    } else if (now < start) {
-                        //console.log(`Status: This class starts in the future (at ${startTime} on ${dateStr}).`);
-                    } else {
-                        //console.log("Status: This class has already ended.");
                     }
                 }
             });
-        }).then(_ => {
-            if (!isBooked) {
+        });
+
+    }
+    let newListOfRooms = document.getElementsByClassName('ls-columnlist mod-onechild')[0].childNodes;
+
+    for (const room of newListOfRooms) {
+        if (room.nodeType !== 1) continue;
+        const a = room.querySelector('a');
+        const link = a.getAttribute('href');
+        const number = a.querySelector('.findskema-symbol').innerText;
+
+        if (status[number]) {
+
+            let value = status[number];
+            //for (const [key, value] of Object.entries(status).sort((a, b) => a[0] - b[0]).sort((a, b) => b[1].priority - a[1].priority)) {
+            if (value['booked'] !== true && (number.charAt(0) >= '0' && number.charAt(0) <= '9')) {
+
                 let element = document.createElement('li');
                 unbookedListContainer.appendChild(element);
+                let linkElement = document.createElement('a');
+                element.appendChild(linkElement);
+                linkElement.setAttribute('href', link);
+
                 let priorityText = '';
-                switch (priority) {
+                switch (value['priority']) {
                     case 1:
-                        priorityText = ' - Aflyst'
+                        priorityText = ' <strong>- Aflyst</strong>'
                         break;
                     default:
                         break
                 }
-                element.innerHTML = number + priorityText;
+                linkElement.innerHTML = number + priorityText;
             }
-        });
+        }else if((number.charAt(0) >= '0' && number.charAt(0) <= '9')){
+            let element = document.createElement('li');
+            unbookedListContainer.appendChild(element);
+            let linkElement = document.createElement('a');
+            element.appendChild(linkElement);
+            linkElement.setAttribute('href', link);
+            linkElement.style.color = 'rgba(255,0,0,0.29)';
 
+            linkElement.innerHTML = number;
+        }
     }
-    console.log("Done?");
+
+
     searching.remove()
 }
+
 
 function replaceSkemaElements() {
     changeSkemabrikker();
@@ -370,7 +419,7 @@ function replaceSkemaElements() {
 
     }
     if (window.location.href.split('/')[5].split('.')[0] === 'FindSkema') {
-        FindAndListUnbookedRooms();
+        OptimizedFindRooms();
 
     }
 
