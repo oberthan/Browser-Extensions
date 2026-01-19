@@ -93,6 +93,74 @@ function findNReplaceWeek(skemaTabel, dayOfMonth, month) {
     }
 }
 
+async function extracted() {
+    let mainContentContainer = document.querySelector('.ls-content-container');
+    let unbookedContainer = document.createElement('div');
+    mainContentContainer.insertBefore(unbookedContainer, mainContentContainer.children[1]);
+    let header = document.createElement('h3');
+    unbookedContainer.appendChild(header);
+    header.innerText = "Lokaler der ikke er booket:";
+    let searching = document.createElement('h4');
+    searching.innerText = 'Søger efter lokaler...';
+    unbookedContainer.appendChild(searching);
+
+
+    console.log('Added the Unbooked Container');
+
+    let listOfRooms = document.getElementsByClassName('ls-columnlist mod-onechild')[0].childNodes;
+
+    for (const room of listOfRooms) {
+        if (room.nodeType !== 1) continue;
+        const a = room.querySelector('a');
+        const link = a.getAttribute('href');
+        const number = a.querySelector('.findskema-symbol').innerText;
+
+        if (number.charAt(0) < '0' || number.charAt(0) > '9') continue;
+
+        let isBooked = false;
+        await scrapeWebsite(link).then(doc => {
+
+            doc.querySelectorAll('.s2brik').forEach(el => {
+                const tooltip = el.getAttribute('data-tooltip');
+
+                // 2. Extract the date/time string (e.g., "20/1-2026 14:30 til 15:30")
+                const timeMatch = tooltip.match(/(\d{1,2}\/\d{1,2}-\d{4})\s(\d{2}:\d{2})\stil\s(\d{2}:\d{2})/);
+
+                if (timeMatch) {
+                    const [_, dateStr, startTime, endTime] = timeMatch;
+
+                    // 3. Convert Lectio format (DD/MM-YYYY) to standard JS format (YYYY-MM-DD)
+                    const [day, month, year] = dateStr.split(/[\/-]/);
+                    const startStr = `${year}-${month}-${day} ${startTime}:00`
+                    const start = new Date(startStr);
+                    const end = new Date(`${year}-${month}-${day} ${endTime}`);
+                    const now = new Date();
+
+                    // 4. Compare
+                    if (now >= start && now <= end) {
+                        isBooked = true;
+                        //console.log(timeMatch);
+                        console.log(`Status: You should be in this class ${number} right now.`);
+                    } else if (now < start) {
+                        //console.log(`Status: This class starts in the future (at ${startTime} on ${dateStr}).`);
+                    } else {
+                        //console.log("Status: This class has already ended.");
+                    }
+                }
+            });
+        }).then(_ => {
+            if (!isBooked) {
+                let element = document.createElement('p');
+                unbookedContainer.appendChild(element);
+                element.textContent = number;
+            }
+        });
+
+    }
+    console.log("Done?");
+    searching.remove()
+}
+
 function replaceSkemaElements() {
     changeSkemabrikker();
 
@@ -273,56 +341,7 @@ function replaceSkemaElements() {
 
     }
     if (window.location.href.split('/')[5].split('.')[0] === 'FindSkema') {
-        let mainContentContainer = document.querySelector('.ls-content-container');
-        let unbookedContainer = document.createElement('div');
-        mainContentContainer.insertBefore(unbookedContainer, mainContentContainer.children[1]);
-
-        console.log('Added the Unbooked Container');
-
-        let listOfRooms = document.getElementsByClassName('ls-columnlist mod-onechild')[0].childNodes;
-
-        listOfRooms.forEach(room => {
-            if (room.nodeType !== 1) return;
-            const a = room.querySelector('a');
-            const link = a.getAttribute('href');
-            const number = a.querySelector('.findskema-symbol').innerText;
-
-            let isBooked = false;
-            scrapeWebsite(link).then(doc => {
-
-                doc.querySelectorAll('.s2brik').forEach(el => {
-                    const tooltip = el.getAttribute('data-tooltip');
-
-                    // 2. Extract the date/time string (e.g., "20/1-2026 14:30 til 15:30")
-                    const timeMatch = tooltip.match(/(\d{1,2}\/\d{1,2}-\d{4})\s(\d{2}:\d{2})\stil\s(\d{2}:\d{2})/);
-
-                    if (timeMatch) {
-                        const [_, dateStr, startTime, endTime] = timeMatch;
-
-                        // 3. Convert Lectio format (DD/MM-YYYY) to standard JS format (YYYY-MM-DD)
-                        const [day, month, year] = dateStr.split(/[\/-]/);
-                        const start = new Date(`${year}-${month}-${day}T${startTime}`);
-                        const end = new Date(`${year}-${month}-${day}T${endTime}`);
-                        const now = new Date();
-
-                        // 4. Compare
-                        if (now >= start && now <= end) {
-                            isBooked = true;
-                            console.log("Status: You should be in this class right now.");
-                        } else if (now < start) {
-                            console.log(`Status: This class starts in the future (at ${startTime} on ${dateStr}).`);
-                        } else {
-                            console.log("Status: This class has already ended.");
-                        }
-                    }
-                });
-            });
-            if (!isBooked) {
-                let element = document.createElement('p');
-                unbookedContainer.appendChild(element);
-                element.textContent = number;
-            }
-        })
+        extracted();
 
     }
 
