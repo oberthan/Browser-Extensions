@@ -93,17 +93,31 @@ function findNReplaceWeek(skemaTabel, dayOfMonth, month) {
     }
 }
 
-async function extracted() {
+async function FindAndListUnbookedRooms() {
     let mainContentContainer = document.querySelector('.ls-content-container');
     let unbookedContainer = document.createElement('div');
     mainContentContainer.insertBefore(unbookedContainer, mainContentContainer.children[1]);
+    unbookedContainer.style.maxWidth = '600px';
+    unbookedContainer.style.border = 'solid gray 1px';
+    unbookedContainer.style.borderRadius = '11px';
+    unbookedContainer.style.padding = '14px';
+    unbookedContainer.style.paddingTop = '0';
+
+
     let header = document.createElement('h3');
     unbookedContainer.appendChild(header);
     header.innerText = "Lokaler der ikke er booket:";
+
     let searching = document.createElement('h4');
     searching.innerText = 'Søger efter lokaler...';
     unbookedContainer.appendChild(searching);
 
+    let unbookedListContainer = document.createElement('ul');
+    unbookedContainer.appendChild(unbookedListContainer);
+    unbookedListContainer.style.listStyle = 'none';
+    unbookedListContainer.style.display = 'grid';
+    unbookedListContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(70px, 1fr))';
+    unbookedListContainer.style.gap = '0.5rem';
 
     console.log('Added the Unbooked Container');
 
@@ -118,6 +132,7 @@ async function extracted() {
         if (number.charAt(0) < '0' || number.charAt(0) > '9') continue;
 
         let isBooked = false;
+        let priority = 0;
         await scrapeWebsite(link).then(doc => {
 
             doc.querySelectorAll('.s2brik').forEach(el => {
@@ -138,7 +153,13 @@ async function extracted() {
 
                     // 4. Compare
                     if (now >= start && now <= end) {
-                        isBooked = true;
+                        if (el.classList.contains('s2cancelled')) {
+                            priority = 1;
+                        }
+                        else{
+                            isBooked = true;
+                            //return;
+                        }
                         //console.log(timeMatch);
                         console.log(`Status: You should be in this class ${number} right now.`);
                     } else if (now < start) {
@@ -150,9 +171,17 @@ async function extracted() {
             });
         }).then(_ => {
             if (!isBooked) {
-                let element = document.createElement('p');
-                unbookedContainer.appendChild(element);
-                element.textContent = number;
+                let element = document.createElement('li');
+                unbookedListContainer.appendChild(element);
+                let priorityText = '';
+                switch (priority) {
+                    case 1:
+                        priorityText = ' - Aflyst'
+                        break;
+                    default:
+                        break
+                }
+                element.innerHTML = number + priorityText;
             }
         });
 
@@ -334,14 +363,14 @@ function replaceSkemaElements() {
         var something = document.getElementById('s_m_Content_Content_tocAndToolbar_outerContentContainer');
         var iframe = document.createElement('iframe');
 
-        downloadDoc = fetch('https://www.lectio.dk/lectio/681/lc/65068616345/res/65068633086').then(x => iframe.src = x.response, console.log(x));
+        //downloadDoc = fetch('https://www.lectio.dk/lectio/681/lc/65068616345/res/65068633086').then(x => iframe.src = x.response, console.log(x));
 
         something.appendChild(iframe);
 
 
     }
     if (window.location.href.split('/')[5].split('.')[0] === 'FindSkema') {
-        extracted();
+        FindAndListUnbookedRooms();
 
     }
 
