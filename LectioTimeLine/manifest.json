@@ -1,15 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "Et Bedre Lectio",
+  "name": "Udvidet Lectio",
   "version": "1.0",
-  "description": "Ændrer både udseendet og tilføjer funtioner som mangler rundt omkring.",
+  "description": "Ændrer både udseendet og tilføjer funktioner som mangler rundt omkring.",
   "icons": {
     "16": "graduation_hat16.png",
     "48": "graduation_hat48.png",
     "128": "graduation_hat128.png"
   },
   "permissions": [
-    "activeTab",
     "storage"
   ],
   "background": {
