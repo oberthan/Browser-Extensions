@@ -9,7 +9,8 @@
     "128": "graduation_hat128.png"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "background": {
     "service_worker": "background.js"

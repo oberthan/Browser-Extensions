@@ -18,7 +18,8 @@ function changeSkemabrikker() {
 
     chrome.storage.local.get(null, (data) => {
         // Get the colorList element from popup.html
-        if (data['enabled_'] === true) {
+
+        if (!data['disabled_'] || data['disabled_'] === false) {
             skemaBrikker.forEach(div => {
 
                 const klasseHold = div.querySelector('div.s2skemabrikcontent').querySelector('span').textContent.split(' ');
@@ -739,15 +740,11 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         console.log('Content.js recieved message.')
         replaceHRElements(); // Call the function defined in content.js
     }
-});
 
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.type === 'GetCurrentUrl') {
         return document.location.href;
     }
-});
 
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.type === "updateTheme") {
 
         chrome.storage.local.get(null, (data) => {
