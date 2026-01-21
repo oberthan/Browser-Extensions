@@ -1,33 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
-<head style="border-radius: 10px;">
+<html lang="da">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Et Bedre Lectio</title>
+
     <style>
-        /* Set the width of the popup */
-        body {
-            width: 300px; /* Adjust the width as needed */
+        :root {
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --accent: #3b82f6;
+            --border: #e5e7eb;
+            --radius: 12px;
         }
 
-        /* Add other CSS styles as needed */
+        body {
+            width: 320px;
+            margin: 0;
+            padding: 16px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            margin: 0 0 8px;
+        }
+
+        h2 {
+            font-size: 0.95rem;
+            margin: 16px 0 8px;
+            color: var(--muted);
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        input[type="checkbox"] {
+            accent-color: var(--accent);
+        }
+
+        select,
+        input[type="color"],
+        button {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #fff;
+            font-size: 0.85rem;
+        }
+
+        input[type="color"] {
+            height: 36px;
+            padding: 2px;
+            cursor: pointer;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            border-radius: 6px;
+            background: #f3f4f6;
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+        }
+
+        button {
+            margin-top: 8px;
+            cursor: pointer;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
     </style>
 </head>
-<body style="border-radius: 10px;">
-    <input type="checkbox" id="darkmode">
-    <h1>Vælg et hold:</h1>
-    <select id="selectSeed"></select>
-    <input type="color" id="seedInput">
-    <button id="saveButton">Save</button>
-    
-    <h2>Gemte farver:</h2>
-    <ul id="colorList">
-        <!-- List items will be dynamically added here -->
-    </ul>
-    <button id="resetButton">Reset farver</button>
 
-    <button id="chooseFrameUrl">Prøv at sætte denne side som standard</button>
-    <iframe id="lectioFrame"></iframe>
-    <script src="popup.js"></script>
+<body>
+<div class="card">
+    <div class="row">
+        <input type="checkbox" id="darkmode">
+        <label for="darkmode">Dark mode</label>
+    </div>
+
+    <div class="row">
+        <input type="checkbox" id="enableColors">
+        <label for="enableColors">Aktiver farver</label>
+    </div>
+
+    <h1>Vælg et hold</h1>
+    <select id="selectSeed"></select>
+
+    <input type="color" id="seedInput">
+
+    <h2>Gemte farver</h2>
+    <ul id="colorList">
+        <!-- Dynamically added -->
+    </ul>
+
+    <button id="resetButton">Reset farver</button>
+</div>
+
+<script src="popup.js"></script>
 </body>
 </html>

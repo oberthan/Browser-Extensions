@@ -15,55 +15,61 @@ function replaceHRElements() {
 
 function changeSkemabrikker() {
     const skemaBrikker = document.querySelectorAll('div.s2skemabrikInnerContainer');
-    skemaBrikker.forEach(div => {
 
-        const klasseHold = div.querySelector('div.s2skemabrikcontent').querySelector('span').textContent.split(' ');
-        const hold = klasseHold.length > 1 ? klasseHold[1] : klasseHold[0];
-        let randomColor = generateRandomColor(hold);
+    chrome.storage.local.get(null, (data) => {
+        // Get the colorList element from popup.html
+        if (data['enabled_'] === true) {
+            skemaBrikker.forEach(div => {
 
-        chrome.storage.local.get(null, (data) => {
-            // Get the colorList element from popup.html
-            let inList = false;
-            for (const [seed, color] of Object.entries(data)) {
+                const klasseHold = div.querySelector('div.s2skemabrikcontent').querySelector('span').textContent.split(' ');
+                const hold = klasseHold.length > 1 ? klasseHold[1] : klasseHold[0];
+                let randomColor = generateRandomColor(hold);
 
-                if (seed === hold) {
-                    inList = true;
-                    randomColor = color;
-                }
-            }
+                chrome.storage.local.get(null, (data) => {
+                    // Get the colorList element from popup.html
+                    let inList = false;
+                    for (const [seed, color] of Object.entries(data)) {
 
-            if (inList) {
+                        if (seed === hold) {
+                            inList = true;
+                            randomColor = color;
+                        }
+                    }
 
-
-            } else {
-                chrome.runtime.sendMessage({type: 'saveColor', seed: hold, color: randomColor});
-                chrome.runtime.sendMessage({type: 'isColorChanged', seed: seed + '_', changed: false});
-            }
+                    if (inList) {
 
 
-            div.style.setProperty('background-color', randomColor);
-            div.querySelector('div.s2skemabrikcontent').style.setProperty('color', generateContrastColor(randomColor))
-
-            const A = div.parentElement;
-            A.style.setProperty('box-shadow', 'rgba(0, 0, 0, 1) 0px 0px 5px 0px');
-            A.style.setProperty('border-radius', '5px');
-            A.style.setProperty('transform', 'translateY(1px)');
-            A.style.setProperty('transition', '0.1s');
-            A.setAttribute('onmouseover', "this.style.scale='1.1'");
-            A.setAttribute('onmouseout', "this.style.scale='1'");
-            A.style.setProperty('border-left', 'solid 2px #ffffff00');
-
-            if (A.classList.contains('s2cancelled')) {
-                div.style.setProperty('box-shadow', 'inset rgba(100, 0, 0, 0.5) 0px 0px 15px 10px');
-                A.style.setProperty('box-shadow', 'rgba(0, 0, 0, 1) 0px 0px 0px 0px');
-                A.style.setProperty('border-left', 'solid 5px #ff1d00');
-            }
-            if (A.classList.contains('s2changed')) {
-                A.style.setProperty('border-left', 'solid 5px #00ff00');
-            }
-        });
+                    } else {
+                        chrome.runtime.sendMessage({type: 'saveColor', seed: hold, color: randomColor});
+                        chrome.runtime.sendMessage({type: 'isColorChanged', seed: seed + '_', changed: false});
+                    }
 
 
+                    div.style.setProperty('background-color', randomColor);
+                    div.querySelector('div.s2skemabrikcontent').style.setProperty('color', generateContrastColor(randomColor))
+
+                    const A = div.parentElement;
+                    A.style.setProperty('box-shadow', 'rgba(0, 0, 0, 1) 0px 0px 5px 0px');
+                    A.style.setProperty('border-radius', '5px');
+                    A.style.setProperty('transform', 'translateY(1px)');
+                    A.style.setProperty('transition', '0.1s');
+                    A.setAttribute('onmouseover', "this.style.scale='1.1'");
+                    A.setAttribute('onmouseout', "this.style.scale='1'");
+                    A.style.setProperty('border-left', 'solid 2px #ffffff00');
+
+                    if (A.classList.contains('s2cancelled')) {
+                        div.style.setProperty('box-shadow', 'inset rgba(100, 0, 0, 0.5) 0px 0px 15px 10px');
+                        A.style.setProperty('box-shadow', 'rgba(0, 0, 0, 1) 0px 0px 0px 0px');
+                        A.style.setProperty('border-left', 'solid 5px #ff1d00');
+                    }
+                    if (A.classList.contains('s2changed')) {
+                        A.style.setProperty('border-left', 'solid 5px #00ff00');
+                    }
+                });
+
+
+            });
+        }
     });
 }
 
@@ -409,16 +415,16 @@ function replaceSkemaElements() {
 
         });
 
-        var something = document.getElementById('s_m_Content_Content_tocAndToolbar_outerContentContainer');
-        var iframe = document.createElement('iframe');
+        let something = document.getElementById('s_m_Content_Content_tocAndToolbar_outerContentContainer');
+        //var iframe = document.createElement('iframe');
 
         //downloadDoc = fetch('https://www.lectio.dk/lectio/681/lc/65068616345/res/65068633086').then(x => iframe.src = x.response, console.log(x));
 
-        something.appendChild(iframe);
+        //something.appendChild(iframe);
 
 
     }
-    if (window.location.href.split('/')[5].split('.')[0] === 'FindSkema') {
+    if (window.location.href.split('/')[5].split('&')[0] === 'FindSkema.aspx?type=lokale') {
         OptimizedFindRooms();
 
     }

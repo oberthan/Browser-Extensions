@@ -29,11 +29,12 @@ chrome.storage.local.get(null, (data) => {
   }
 
   document.getElementById('darkmode').checked = data['darkTheme_'];
-  var leFrame = document.getElementById('lectioFrame')
+  document.getElementById('enableColors').checked = data['enabled_'];
+/*  var leFrame = document.getElementById('lectioFrame')
   leFrame.src = data['_frameUrl_'];
   leFrame.style.transformOrigin = 'top left';
   leFrame.style.transform = 'scale(0.29)';
-  leFrame.style.setProperty('zoom', '3.5');
+  leFrame.style.setProperty('zoom', '3.5');*/
 
 
 });
@@ -51,7 +52,7 @@ function saveSeedColor(){
       chrome.tabs.sendMessage(tab[0].id, {type: "updateColors"});
     });
 
-    document.location.reload();
+    //document.location.reload();
 
 
 
@@ -111,8 +112,18 @@ function toggleDarkMode(){
     chrome.tabs.sendMessage(tab[0].id, {type: "updateTheme"});
   });
 }
+function toggleColors(){
+    console.log(document.getElementById('enableColors').checked);
+    chrome.runtime.sendMessage({ type: 'saveColor', seed: 'enabled_', color: document.getElementById('enableColors').checked });
+    chrome.tabs.query({currentWindow: true, active: true}, function(tab) {
+    chrome.tabs.sendMessage(tab[0].id, {type: "updateColors"});
+    });
+}
 
-document.getElementById('saveButton').addEventListener('click', saveSeedColor);
+
+//document.getElementById('saveButton').addEventListener('click', saveSeedColor);
+document.getElementById('seedInput').addEventListener("input", saveSeedColor);
+document.getElementById('seedInput').addEventListener("change", () => document.location.reload());
 document.getElementById('resetButton').addEventListener('click', ResetStorage);
-document.getElementById('chooseFrameUrl').addEventListener('click', ChangeFrameUrl);
 document.getElementById('darkmode').addEventListener('change', toggleDarkMode);
+document.getElementById('enableColors').addEventListener('change', toggleColors);

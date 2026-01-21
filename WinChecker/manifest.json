@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "XHR Response Extractor",
+  "version": "1.0",
+  "permissions": ["scripting", "activeTab"],
+  "host_permissions": [
+    "https://www.unibet.dk/*",
+    "https://*.cloudfront.net/*",
+    "https://mcasino.api.relaxg.com/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.unibet.dk/*",
+        "https://*.cloudfront.net/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}
