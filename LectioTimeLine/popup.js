@@ -29,7 +29,7 @@ chrome.storage.local.get(null, (data) => {
   }
 
   document.getElementById('darkmode').checked = data['darkTheme_'];
-  document.getElementById('enableColors').checked = data['enabled_'];
+  document.getElementById('disableColors').checked = data['disabled_'];
 /*  var leFrame = document.getElementById('lectioFrame')
   leFrame.src = data['_frameUrl_'];
   leFrame.style.transformOrigin = 'top left';
@@ -113,8 +113,8 @@ function toggleDarkMode(){
   });
 }
 function toggleColors(){
-    console.log(document.getElementById('enableColors').checked);
-    chrome.runtime.sendMessage({ type: 'saveColor', seed: 'enabled_', color: document.getElementById('enableColors').checked });
+    console.log(document.getElementById('disableColors').checked);
+    chrome.runtime.sendMessage({ type: 'saveColor', seed: 'disabled_', color: document.getElementById('disableColors').checked });
     chrome.tabs.query({currentWindow: true, active: true}, function(tab) {
     chrome.tabs.sendMessage(tab[0].id, {type: "updateColors"});
     });
@@ -126,4 +126,4 @@ document.getElementById('seedInput').addEventListener("input", saveSeedColor);
 document.getElementById('seedInput').addEventListener("change", () => document.location.reload());
 document.getElementById('resetButton').addEventListener('click', ResetStorage);
 document.getElementById('darkmode').addEventListener('change', toggleDarkMode);
-document.getElementById('enableColors').addEventListener('change', toggleColors);
+document.getElementById('disableColors').addEventListener('change', toggleColors);

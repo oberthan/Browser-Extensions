@@ -92,6 +92,9 @@
             font-size: 0.8rem;
             margin-bottom: 6px;
         }
+        li:last-child {
+            margin-bottom: 0;
+        }
 
         button {
             margin-top: 8px;
@@ -116,8 +119,8 @@
     </div>
 
     <div class="row">
-        <input type="checkbox" id="enableColors">
-        <label for="enableColors">Aktiver farver</label>
+        <input type="checkbox" id="disableColors">
+        <label for="disableColors">Deaktiver farver</label>
     </div>
 
     <h1>Vælg et hold</h1>
@@ -126,8 +129,7 @@
     <input type="color" id="seedInput">
 
     <h2>Gemte farver</h2>
-    <ul id="colorList">
-        <!-- Dynamically added -->
+    <ul id="colorList" style="border: solid 1px rgba(103,103,103,0.11); border-radius: 6px; padding: 6px;">
     </ul>
 
     <button id="resetButton">Reset farver</button>
